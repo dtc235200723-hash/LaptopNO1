@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>LaptopShop — Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="noise"></div>
+
+<header>
+    <div class="logo">
+        <span class="logo-icon">◈</span>
+        <span class="logo-text">LaptopShop</span>
+    </div>
+    <form class="search-form" action="/" method="get" id="mainSearchForm">
+        <input type="text" name="q" id="searchInput" placeholder="Tìm kiếm sản phẩm..." value="{{ query }}">
+        <input type="hidden" name="brand" id="brandHidden" value="{{ brand }}">
+        <input type="hidden" name="price" id="priceHidden" value="{{ price_range }}">
+        <button type="submit">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </button>
+    </form>
+    <a href="/cart" class="cart-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        Giỏ hàng
+        <span class="badge">{{ cart|length }}</span>
+    </a>
+       {% if session.get('user') %}
+    <span style="font-size:13px;color:#c9a84c;">👤 {{ session['user'] }}</span>
+    <a href="/logout" class="cart-btn">Đăng xuất</a>
+      {% else %}
+    <a href="/login" class="cart-btn">Đăng nhập</a>
+      {% endif %}
+</header>
+
+<main>
+    <div class="hero" style="
+    background-image: url('/static/hero.png');
+    background-size: cover;
+    background-position: top;
+    background-repeat: no-repeat;
+    position: relative;
+    ">
+    <div style="position:relative;z-index:1;">
+        <div class="hero-label">Bộ sưu tập mới nhất</div>
+        <h1 class="hero-title">Laptop<br><em>No1</em></h1>
+        <p class="hero-sub">Hiệu năng vượt trội — Thiết kế tinh tế — Bảo hành chính hãng</p>
+    </div>
+</div>
+    <div class="shop-layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+                Bộ lọc tìm kiếm
+            </div>
+
+            <!-- Hãng sản xuất -->
+            <div class="filter-section">
+                <div class="filter-title" onclick="toggleSection(this)">
+                    Hãng sản xuất
+                    <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 15-6-6-6 6"/></svg>
+                </div>
+                <div class="filter-body">
+                    <div class="brand-grid">
+                        {% set brands = [('all','Tất cả'),('asus','ASUS'),('dell','Dell'),('hp','HP'),('lenovo','Lenovo'),('apple','Apple'),('acer','Acer')] %}
+                        {% for val, label in brands %}
+                        <button class="brand-btn {% if brand == val or (val == 'all' and not brand) %}active{% endif %}"
+                                onclick="selectBrand('{{ val }}')">{{ label }}</button>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mức giá -->
+            <div class="filter-section">
+                <div class="filter-title" onclick="toggleSection(this)">
+                    Mức giá
+                    <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 15-6-6-6 6"/></svg>
+                </div>
+                <div class="filter-body">
+                    {% set price_options = [
+                        ('all','Tất cả'),
+                        ('under12','Dưới 12 triệu'),
+                        ('12to15','Từ 12 – 15 triệu'),
+                        ('15to20','Từ 15 – 20 triệu'),
+                        ('over20','Trên 20 triệu')
+                    ] %}
+                    {% for val, label in price_options %}
+                    <label class="price-option">
+                        <input type="radio" name="price_filter" value="{{ val }}"
+                            {% if price_range == val or (val == 'all' and not price_range) %}checked{% endif %}
+                            onchange="selectPrice('{{ val }}')">
+                        <span class="radio-dot"></span>
+                        {{ label }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <a href="/" class="btn-reset">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                Xóa bộ lọc
+            </a>
+        </aside>
+
+        <!-- PRODUCT AREA -->
+        <div class="product-area">
+            <div class="product-area-header">
+                {% if query %}
+                    <h2 class="section-title">Kết quả cho <em>"{{ query }}"</em></h2>
+                {% else %}
+                    <h2 class="section-title">Sản phẩm <em>nổi bật</em></h2>
+                {% endif %}
+                <span class="result-count">{{ products|length }} sản phẩm</span>
+            </div>
+
+            {% if products %}
+            <div class="product-grid">
+                {% for product in products %}
+                <div class="card" style="--i: {{ loop.index }}">
+                    <div class="img-wrap">
+                        <span class="badge-label">HOT</span>
+                        <img src="{{ product.image }}" alt="{{ product.name }}">
+                        <div class="img-overlay"></div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="card-brand">CHÍNH HÃNG</div>
+                        <h3>{{ product.name }}</h3>
+                        <p class="price">{{ "{:,.0f}".format(product.price) }}<span>đ</span></p>
+                        <a href="/add/{{ product.id }}" class="btn-add">
+                            <span>Thêm vào giỏ</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </a>
+                        <a href="#" class="btn-buynow" onclick="showQR({{ product.price }})">Mua ngay</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+                <div class="no-result-container">
+                    <p class="no-result">Không tìm thấy sản phẩm nào phù hợp 😕</p>
+                    <a href="/" class="btn-reset" style="display:inline-flex;margin-top:20px;">Xem tất cả sản phẩm</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+
+<a href="https://zalo.me/0797828653" target="_blank" class="zalo-bubble">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg" alt="Zalo">
+</a>
+
+<div class="chat-bubble" onclick="toggleChat()" title="Tư vấn AI">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+</div>
+
+<div class="chat-box" id="chatBox">
+    <div class="chat-header">
+        <div class="chat-header-info">
+            <div class="chat-avatar">◈</div>
+            <div>
+                <div class="chat-name">Tư vấn Laptop AI</div>
+                <div class="chat-status">● Đang hoạt động</div>
+            </div>
+        </div>
+        <button class="chat-close" onclick="toggleChat()">✕</button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+        <div class="msg bot">Xin chào! Mình có thể tư vấn laptop cho bạn. Bạn cần laptop để làm gì? (học tập, văn phòng, đồ họa, gaming...)</div>
+    </div>
+    <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Nhập tin nhắn..." onkeypress="handleKey(event)">
+        <button onclick="sendMessage()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        </button>
+    </div>
+</div>
+
+<script>
+    function selectBrand(val) {
+        document.getElementById('brandHidden').value = val === 'all' ? '' : val;
+        document.getElementById('mainSearchForm').submit();
+    }
+    function selectPrice(val) {
+        document.getElementById('priceHidden').value = val === 'all' ? '' : val;
+        document.getElementById('mainSearchForm').submit();
+    }
+    function toggleSection(titleEl) {
+        const body = titleEl.nextElementSibling;
+        const chevron = titleEl.querySelector('.chevron');
+        const isOpen = body.style.display !== 'none';
+        body.style.display = isOpen ? 'none' : 'block';
+        chevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0)';
+    }
+    function toggleChat() {
+        const box = document.getElementById('chatBox');
+        box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
+    }
+    function handleKey(e) { if (e.key === 'Enter') sendMessage(); }
+    async function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if (!text) return;
+        addMessage(text, 'user');
+        input.value = '';
+        addMessage('Đang suy nghĩ...', 'bot loading-text');
+        const msgs = document.getElementById('chatMessages');
+        try {
+            const res = await fetch('/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message:text}) });
+            const data = await res.json();
+            msgs.querySelectorAll('.loading-text').forEach(el => el.remove());
+            addMessage(data.reply, 'bot');
+        } catch {
+            msgs.querySelectorAll('.loading-text').forEach(el => el.remove());
+            addMessage('Lỗi kết nối, vui lòng thử lại!', 'bot');
+        }
+    }
+    function addMessage(text, type) {
+        const messages = document.getElementById('chatMessages');
+        const div = document.createElement('div');
+        div.className = 'msg ' + type;
+        div.innerHTML = text.replace(/\n/g, '<br>');
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+    }
+</script>
+<!-- POPUP QR -->
+ <!-- POPUP QR -->
+<div class="overlay" id="qrOverlay">
+    <div class="qr-box">
+        <h3>Thanh toán nhanh</h3>
+        <p>Quét mã QR để thanh toán ngay</p>
+        <img id="qrImg" src="" alt="QR Code">
+        <div class="qr-info">
+            MB Bank — 19788520041005<br>
+            Chủ TK: THAOATHOANG
+        </div>
+        <div class="qr-total" id="qrTotal"></div>
+        <button class="btn-close" onclick="closeQR()">Đóng</button>
+    </div>
+</div>
+
+
+<style>
+    .overlay {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.75); z-index: 999;
+        align-items: center; justify-content: center;
+    }
+    .overlay.active { display: flex; }
+    .qr-box {
+        background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px; padding: 32px;
+        text-align: center; max-width: 360px; width: 90%;
+    }
+    .qr-box h3 { font-family: 'Cormorant Garamond', serif; font-size: 22px; margin-bottom: 8px; color: #f0ece4; }
+    .qr-box p { font-size: 13px; color: #7a7570; margin-bottom: 20px; }
+    .qr-box img { width: 220px; height: 220px; border-radius: 8px; border: 4px solid #fff; }
+    .qr-info { margin-top: 16px; font-size: 13px; color: #c9a84c; line-height: 1.8; }
+    .qr-total { font-size: 18px; font-weight: 700; color: #e8c97a; margin-top: 12px; }
+    .btn-close {
+        margin-top: 20px; padding: 10px 28px;
+        background: transparent; border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 6px; color: #7a7570; cursor: pointer;
+        font-size: 13px; transition: all 0.2s;
+    }
+    .btn-close:hover { border-color: #c9a84c; color: #c9a84c; }
+    .btn-buynow {
+        display: block; text-align: center;
+        margin-top: 8px; padding: 10px 16px;
+        background: #f00404; border-radius: 4px;
+        color: #000; text-decoration: none;
+        font-size: 13px; font-weight: 500;
+        transition: opacity 0.2s;
+    }
+    .btn-buynow:hover { opacity: 0.85; }
+</style>
+
+<script>
+    function showQR(amount) {
+        const desc = "Thanh toan don hang";
+        const qrUrl = `https://img.vietqr.io/image/MB-19788520041005-compact2.png?amount=${Math.round(amount)}&addInfo=${encodeURIComponent(desc)}&accountName=THAOATHOANG`;
+        document.getElementById('qrImg').src = qrUrl;
+        document.getElementById('qrTotal').innerText = 'Số tiền: ' + amount.toLocaleString('vi-VN') + 'đ';
+        document.getElementById('qrOverlay').classList.add('active');
+    }
+    function closeQR() {
+        document.getElementById('qrOverlay').classList.remove('active');
+    }
+</script>
+</body>
+</html>

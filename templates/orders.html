@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý đơn hàng</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+    <div class="logo">💻 LaptopShop</div>
+    <a href="/" class="cart-btn">← Trang chủ</a>
+</header>
+<main>
+    <h2 class="cart-title">Quản lý đơn hàng</h2>
+    {% if orders %}
+    <div class="cart-list">
+        {% for order in orders %}
+        <div class="cart-item" style="flex-direction:column;align-items:flex-start;gap:10px;">
+            <div style="display:flex;justify-content:space-between;width:100%;">
+                <strong>Đơn #{{ order.id }}</strong>
+                <span style="color:#7a7570;font-size:12px;">{{ order.created_at }}</span>
+            </div>
+            <p class="price">{{ "{:,.0f}".format(order.total) }}đ</p>
+            <form method="POST" action="/orders/update/{{ order.id }}" style="display:flex;gap:8px;align-items:center;">
+                <select name="status" style="background:#1a1a1a;color:#f0ece4;border:1px solid rgba(255,255,255,0.1);padding:6px 10px;border-radius:4px;">
+                    <option {% if order.status == 'Chờ xác nhận' %}selected{% endif %}>Chờ xác nhận</option>
+                    <option {% if order.status == 'Đang giao' %}selected{% endif %}>Đang giao</option>
+                    <option {% if order.status == 'Hoàn thành' %}selected{% endif %}>Hoàn thành</option>
+                </select>
+                <button type="submit" class="btn-order" style="padding:6px 16px;">Cập nhật</button>
+            </form>
+            <a href="/orders/delete/{{ order.id }}" class="btn-remove" onclick="return confirm('Xóa đơn này?')">Xóa đơn</a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+        <p class="no-result">Chưa có đơn hàng nào 📭</p>
+    {% endif %}
+</main>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Giỏ hàng</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Nunito:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.75); z-index: 999;
+            align-items: center; justify-content: center;
+        }
+        .overlay.active { display: flex; }
+        .qr-box {
+            background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; padding: 32px;
+            text-align: center; max-width: 360px; width: 90%;
+        }
+        .qr-box h3 { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 8px; color: #f0ece4; }
+        .qr-box p { font-size: 13px; color: #7a7570; margin-bottom: 20px; }
+        .qr-box img { width: 220px; height: 220px; border-radius: 8px; border: 4px solid #fff; }
+        .qr-info { margin-top: 16px; font-size: 13px; color: #c9a84c; line-height: 1.8; }
+        .qr-total { font-size: 18px; font-weight: 700; color: #e8c97a; margin-top: 12px; }
+        .btn-close {
+            margin-top: 20px; padding: 10px 28px;
+            background: transparent; border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px; color: #7a7570; cursor: pointer;
+            font-size: 13px; transition: all 0.2s;
+        }
+        .btn-close:hover { border-color: #c9a84c; color: #c9a84c; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">💻 LaptopNO1</div>
+    <a href="/" class="cart-btn">← Tiếp tục mua</a>
+</header>
+
+<main>
+    <h2 class="cart-title">Giỏ hàng của bạn</h2>
+
+    {% if cart %}
+    <div class="cart-list">
+        {% for item in cart %}
+        <div class="cart-item">
+            <img src="{{ item.image }}" alt="{{ item.name }}">
+            <div class="item-info">
+                <h3>{{ item.name }}</h3>
+                <p class="price">{{ "{:,.0f}".format(item.price) }}đ</p>
+            </div>
+            <a href="/remove/{{ item.cart_id }}" class="btn-remove">Xóa</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="cart-footer">
+        <p class="total">Tổng cộng: <strong>{{ "{:,.0f}".format(total) }}đ</strong></p>
+        <a href="/clear" class="btn-clear">Xóa tất cả</a>
+        <a href="#" class="btn-order" onclick="showQR({{ total }})">Đặt hàng</a>
+    </div>
+
+    {% else %}
+        <p class="no-result">Giỏ hàng trống 🛒</p>
+        <a href="/" class="btn-add" style="display:inline-block;margin-top:16px;">Mua ngay</a>
+    {% endif %}
+</main>
+
+<!-- POPUP QR -->
+<div class="overlay" id="qrOverlay">
+    <div class="qr-box">
+        <h3>Thanh toán chuyển khoản</h3>
+        <p>Quét mã QR bên dưới để thanh toán</p>
+        <img id="qrImg" src="" alt="QR Code">
+        <div class="qr-info">
+            MB Bank — 19788520041005<br>
+            Chủ TK: THAOATHOANG
+        </div>
+        <div class="qr-total" id="qrTotal"></div>
+        <button class="btn-close" onclick="closeQR()">Đóng</button>
+    </div>
+</div>
+
+<script>
+    function showQR(total) {
+        const amount = Math.round(total);
+        const desc = "Thanh toan don hang";
+        const qrUrl = `https://img.vietqr.io/image/MB-19788520041005-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(desc)}&accountName=THAOATHOANG`;
+        document.getElementById('qrImg').src = qrUrl;
+        document.getElementById('qrTotal').innerText = 'Số tiền: ' + total.toLocaleString('vi-VN') + 'đ';
+        document.getElementById('qrOverlay').classList.add('active');
+    }
+    function closeQR() {
+        document.getElementById('qrOverlay').classList.remove('active');
+    }
+</script>
+
+</body>
+</html>
